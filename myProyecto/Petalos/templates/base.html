@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+{% load static %}
+
+<html lang="en">
+{% load pwa %}
+
+{% progressive_web_app_meta %}
+
+<head>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <!-- Bootstrap CSS -->
+  <link href="{% static 'css/estilos_floreria.css' %}" type="text/css" rel="stylesheet">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+    integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+  <!-- Optional JavaScript -->
+  <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+  <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+    integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
+    crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+    integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+    crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+    integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
+    crossorigin="anonymous"></script>
+
+  <!-- The core Firebase JS SDK is always required and must be listed first -->
+  <script src="https://www.gstatic.com/firebasejs/3.9.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/3.9.0/firebase-messaging.js"></script>
+
+
+  <!-- TODO: Add SDKs for Firebase products that you want to use
+      https://firebase.google.com/docs/web/setup#available-libraries -->
+
+  <script>
+    // Your web app's Firebase configuration
+    var firebaseConfig = {
+      apiKey: "AIzaSyCoSSop6fBK1kQ-8fXCSuM2m5w-vptK520",
+      authDomain: "floreria-f08d4.firebaseapp.com",
+      databaseURL: "https://floreria-f08d4.firebaseio.com",
+      projectId: "floreria-f08d4",
+      storageBucket: "floreria-f08d4.appspot.com",
+      messagingSenderId: "95444658015",
+      appId: "1:95444658015:web:58b4ea36f5a237ecb9b8ea"
+    };
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+
+    let messaging = firebase.messaging();
+
+    navigator.serviceWorker.register('./serviceworker.js')
+    .then(function(register){
+      messaging.useServiceWorker(register);
+
+      messaging.requestPermission()
+      .then(function(){
+        console.log("El usuario ha aceptado")
+
+        return messaging.getToken();
+
+      })
+      .then(function(token){
+        console.log(token);
+        
+        fetch('guardar-token/',{
+          method:'post',
+          headers:{
+              'Content-Type':'application/json',
+              'Accept':'appllication/json',
+          },
+          body:JSON.stringify({
+            'token':token
+          })
+        })
+        .then(function(resultado){
+          console.log("Se ha guardado el token")
+        })
+        .catch(function(e) {
+          console.log("No se ha guardado el token")
+        })
+      })
+    })
+
+    messaging.onMessage(function(payload){
+      let title = 'Nueva flor disponible';
+      
+      let options = {
+        body:'Compre ya la nueva flor',
+        icon:'static/img/logo.png'
+      }
+
+      let mensaje = new Notification(title, options);
+    });
+  </script>
+
+  <title>
+    {% block titulo %}
+
+    {% endblock titulo %}
+  </title>
+</head>
+
+<body>
+  <div>
+    <img src="{% static 'img/logo.png'%}" width="100%" alt="foto logo">
+  </div>
+  <div>
+    <nav>
+      <ol>
+        <li>
+          <a href="{% url 'MENU' %}"> Menu</a>
+        </li>
+        <li>
+          <a href="{% url 'CARRI' %}"> Carrito</a>
+        </li>
+        <li>
+          <a href="{% url 'FORMU' %}"> Formulario</a>
+        </li>
+      </ol>
+    </nav>
+  </div>
+  {% block contenido %}
+
+  {% endblock contenido %}
+</body>
+
+</html>
